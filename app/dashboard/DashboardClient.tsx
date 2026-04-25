@@ -36,6 +36,52 @@ export default function DashboardClient({ initialItems, initialCollections, user
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<any>(initialItems[0] || null)
   
+  // 패널 너비 상태 (기본값 및 로컬스토리지 로드)
+  const [sidebarWidth, setSidebarWidth] = useState(200)
+  const [detailWidth, setDetailWidth] = useState(240)
+  const [isResizingSidebar, setIsResizingSidebar] = useState(false)
+  const [isResizingDetail, setIsResizingDetail] = useState(false)
+
+  useEffect(() => {
+    const savedSidebarWidth = localStorage.getItem('sidebarWidth')
+    const savedDetailWidth = localStorage.getItem('detailWidth')
+    if (savedSidebarWidth) setSidebarWidth(parseInt(savedSidebarWidth))
+    if (savedDetailWidth) setDetailWidth(parseInt(savedDetailWidth))
+  }, [])
+
+  // 드래그 이벤트 핸들러
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isResizingSidebar) {
+        const newWidth = Math.min(Math.max(e.clientX, 160), 320)
+        setSidebarWidth(newWidth)
+        localStorage.setItem('sidebarWidth', newWidth.toString())
+      }
+      if (isResizingDetail) {
+        const newWidth = Math.min(Math.max(window.innerWidth - e.clientX, 200), 400)
+        setDetailWidth(newWidth)
+        localStorage.setItem('detailWidth', newWidth.toString())
+      }
+    }
+
+    const handleMouseUp = () => {
+      setIsResizingSidebar(false)
+      setIsResizingDetail(false)
+      document.body.style.cursor = 'default'
+    }
+
+    if (isResizingSidebar || isResizingDetail) {
+      window.addEventListener('mousemove', handleMouseMove)
+      window.addEventListener('mouseup', handleMouseUp)
+      document.body.style.cursor = 'col-resize'
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isResizingSidebar, isResizingDetail])
+
   // 컬렉션 관련 상태
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null)
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
@@ -273,7 +319,15 @@ export default function DashboardClient({ initialItems, initialCollections, user
     <div className="flex h-screen w-full bg-[#1A1A1F] overflow-hidden text-[#E5E5E5] font-light">
       
       {/* 1. 사이드바 */}
-      <aside className="w-[200px] bg-[#141418] border-r border-[#2A2A32] flex flex-col">
+      <aside 
+        style={{ width: sidebarWidth }}
+        className="bg-[#141418] border-r border-[#2A2A32] flex flex-col relative shrink-0"
+      >
+        {/* 드래그 핸들 (사이드바 오른쪽) */}
+        <div 
+          onMouseDown={() => setIsResizingSidebar(true)}
+          className={`absolute -right-[2px] top-0 bottom-0 w-[4px] cursor-col-resize z-50 transition-colors ${isResizingSidebar ? 'bg-[#F5E642]' : 'hover:bg-[#F5E642]'}`}
+        />
         <div className="p-5 flex items-center gap-2.5">
           <div className="w-7 h-7 bg-[#F5E642] rounded-sm flex items-center justify-center shadow-lg shadow-[#F5E642]/10">
             <span className="text-[#1A1A1F] font-black text-base">V</span>
@@ -506,7 +560,15 @@ export default function DashboardClient({ initialItems, initialCollections, user
       </main>
 
       {/* 3. 디테일 패널 */}
-      <aside className="w-[240px] bg-[#141418] border-l border-[#2A2A32] flex flex-col overflow-x-hidden">
+      <aside 
+        style={{ width: detailWidth }}
+        className="bg-[#141418] border-l border-[#2A2A32] flex flex-col overflow-x-hidden relative shrink-0"
+      >
+        {/* 드래그 핸들 (디테일 패널 왼쪽) */}
+        <div 
+          onMouseDown={() => setIsResizingDetail(true)}
+          className={`absolute -left-[2px] top-0 bottom-0 w-[4px] cursor-col-resize z-50 transition-colors ${isResizingDetail ? 'bg-[#F5E642]' : 'hover:bg-[#F5E642]'}`}
+        />
         {currentSelectedItem ? (
           <>
             <div className="h-14 border-b border-[#2A2A32] flex items-center justify-between px-5 shrink-0">
