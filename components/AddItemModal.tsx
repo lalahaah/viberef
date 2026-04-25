@@ -70,15 +70,21 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
       if (error) throw error
 
       // 컬렉션이 선택된 경우 collection_items에도 저장
+      let itemWithCollections = { ...data, collections: [] as any[] }
       if (formData.collection_id && data) {
-        await supabase
+        const { error: relError } = await supabase
           .from('collection_items')
           .insert([
             { collection_id: formData.collection_id, item_id: data.id }
           ])
+        
+        if (!relError) {
+          const selectedCol = collections.find(c => c.id === formData.collection_id)
+          itemWithCollections.collections = [{ id: formData.collection_id, name: selectedCol?.name }]
+        }
       }
 
-      onSuccess(data)
+      onSuccess(itemWithCollections)
       onClose()
       setFormData({ url: '', title: '', memo: '', collection_id: '', tags: '' })
     } catch (error: any) {
