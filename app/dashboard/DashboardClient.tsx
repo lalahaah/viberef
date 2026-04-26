@@ -181,16 +181,20 @@ export default function DashboardClient({ initialItems, initialCollections, user
     e.stopPropagation()
     if (!confirm('정말 삭제할까요?')) return
 
-    const { error } = await supabase
-      .from('items')
-      .delete()
-      .match({ id: itemId })
+    try {
+      const response = await fetch(`/api/items/${itemId}`, {
+        method: 'DELETE',
+      })
 
-    if (!error) {
-      setItems(prev => prev.filter(i => i.id !== itemId))
-      if (selectedItem?.id === itemId) setSelectedItem(null)
-    } else {
-      alert('삭제 중 오류가 발생했습니다.')
+      if (response.ok) {
+        setItems(prev => prev.filter(i => i.id !== itemId))
+        if (selectedItem?.id === itemId) setSelectedItem(null)
+      } else {
+        const data = await response.json()
+        throw new Error(data.error || '삭제 실패')
+      }
+    } catch (error: any) {
+      alert(error.message || '삭제 중 오류가 발생했습니다.')
     }
   }
 
