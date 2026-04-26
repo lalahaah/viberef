@@ -11,16 +11,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 1. 초기 데이터 설정 (현재 탭 또는 우클릭 데이터)
   let initialScreenshotUrl = '';
   
-  const { pendingItem } = await chrome.storage.local.get('pendingItem');
-  
-  if (pendingItem) {
-    pageTitleInput.value = pendingItem.title || '';
-    pageUrlInput.value = pendingItem.url || '';
-    initialScreenshotUrl = pendingItem.imageUrl || '';
+  // 데이터 채우기 공통 함수
+  const populateForm = (data) => {
+    if (!data) return;
+    pageTitleInput.value = data.title || '';
+    pageUrlInput.value = data.url || '';
+    initialScreenshotUrl = data.imageUrl || '';
     
-    // 사용했으니 지우기
-    chrome.storage.local.remove('pendingItem');
+    // 배지만 지우기 (데이터 삭제는 저장 성공 시 수행)
     chrome.action.setBadgeText({ text: "" });
+  };
+
+  // 메시지 리스너 추가 (팝업이 열려있는 상태에서 우클릭 시)
+  chrome.runtime.onMessage.addListener((message) => {
+    if (message.type === 'ITEM_CAPTURED') {
+      populateForm(message.data);
+    }
+  });
+
+  // 처음에 Storage 체크
+  const { pendingItem } = await chrome.storage.local.get('pendingItem');
+  if (pendingItem) {
+    populateForm(pendingItem);
   } else {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab) {
@@ -79,6 +91,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const result = await response.json();
 
       if (result.success) {
+        // 저장 성공 시에만 임시 데이터 삭제
+        chrome.storage.local.remove('pendingItem');
+        
         statusDiv.style.display = 'block';
         saveBtn.style.display = 'none';
         setTimeout(() => window.close(), 1500);

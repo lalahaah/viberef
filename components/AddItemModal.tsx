@@ -66,7 +66,7 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
         screenshot_url = uploadData.url
       } else if (activeTab === 'url') {
         if (urlType === 'image') {
-          // 2. 이미지 URL 직접 입력
+          // 2. 이미지 URL 직접 입력 - 어떠한 캡처나 업로드 없이 그대로 사용
           screenshot_url = formData.url
         } else {
           // 3. Microlink API를 이용한 웹사이트 캡처
@@ -89,11 +89,12 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
         ? formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== '')
         : []
 
+      // 최종 저장 시 urlType에 따른 분기 처리 강화
       const { data, error } = await supabase
         .from('items')
         .insert([
           {
-            url: activeTab === 'upload' ? screenshot_url : formData.url,
+            url: (activeTab === 'url' && urlType === 'image') ? screenshot_url : (activeTab === 'upload' ? screenshot_url : formData.url),
             title: formData.title || (activeTab === 'upload' ? selectedFile?.name : formData.url),
             memo: formData.memo,
             user_tags: user_tags,
