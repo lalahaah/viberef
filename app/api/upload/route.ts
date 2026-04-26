@@ -28,8 +28,12 @@ export async function POST(request: Request) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer())
-    const sanitizedFileName = file.name.replace(/\s+/g, '_')
-    const fileName = `${user.id}/${Date.now()}-${sanitizedFileName}`
+    
+    // 확장자 추출
+    const fileExtension = file.name.split('.').pop() || 'png'
+    // 랜덤 UUID 생성하여 파일명 결정
+    const fileName = `${user.id}/${crypto.randomUUID()}.${fileExtension}`
+    
     const contentType = file.type
 
     await r2Client.send(
