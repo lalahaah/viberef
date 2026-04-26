@@ -37,8 +37,8 @@ export async function DELETE(
     }
 
     // 3. R2 이미지 삭제 (R2 URL인 경우에만)
-    const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL || ''
-    if (item.screenshot_url && item.screenshot_url.includes(r2PublicUrl)) {
+    const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
+    if (r2PublicUrl && item.screenshot_url && item.screenshot_url.includes(r2PublicUrl)) {
       try {
         // URL에서 Key(파일명) 추출
         // 예: https://pub-xxx.r2.dev/user-id/123-image.png -> user-id/123-image.png
