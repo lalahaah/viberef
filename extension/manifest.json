@@ -5,8 +5,12 @@
   "description": "한 클릭으로 디자인 레퍼런스를 VibeRef에 저장하세요.",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "contextMenus"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "host_permissions": [
     "https://viberef-wheat.vercel.app/*"
   ],

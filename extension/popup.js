@@ -8,11 +8,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   const statusDiv = document.getElementById('status');
   const errorDiv = document.getElementById('error');
 
-  // 1. 현재 탭 정보 가져오기
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (tab) {
-    pageTitleInput.value = tab.title || '';
-    pageUrlInput.value = tab.url || '';
+  // 1. 초기 데이터 설정 (현재 탭 또는 우클릭 데이터)
+  let initialScreenshotUrl = '';
+  
+  const { pendingItem } = await chrome.storage.local.get('pendingItem');
+  
+  if (pendingItem) {
+    pageTitleInput.value = pendingItem.title || '';
+    pageUrlInput.value = pendingItem.url || '';
+    initialScreenshotUrl = pendingItem.imageUrl || '';
+    
+    // 사용했으니 지우기
+    chrome.storage.local.remove('pendingItem');
+    chrome.action.setBadgeText({ text: "" });
+  } else {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab) {
+      pageTitleInput.value = tab.title || '';
+      pageUrlInput.value = tab.url || '';
+    }
   }
 
   // 2. 컬렉션 목록 가져오기
@@ -49,7 +63,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       url: pageUrlInput.value,
       collection_id: collectionSelect.value,
       tags: document.getElementById('tags').value,
-      memo: document.getElementById('memo').value
+      memo: document.getElementById('memo').value,
+      screenshot_url: initialScreenshotUrl
     };
 
     try {

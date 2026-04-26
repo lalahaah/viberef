@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   try {
     const supabase = await createClient()
     const body = await request.json()
-    const { url, title, memo, collection_id, tags } = body
+    const { url, title, memo, collection_id, tags, screenshot_url: provided_screenshot_url } = body
 
     // 1. 사용자 세션 확인
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -24,8 +24,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // 2. Microlink API로 스크린샷 캡처
-    const screenshot_url = `https://api.microlink.io?url=${encodeURIComponent(url)}&screenshot=true&embed=screenshot.url`
+    // 2. 이미지 URL 결정 (이미 제공되었다면 그것을 사용, 아니면 Microlink)
+    const screenshot_url = provided_screenshot_url || 
+      `https://api.microlink.io?url=${encodeURIComponent(url)}&screenshot=true&embed=screenshot.url`
 
     // 3. 아이템 저장
     const { data: item, error: itemError } = await supabase
