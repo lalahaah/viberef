@@ -36,6 +36,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Item not found' }, { status: 404 })
     }
 
+    console.log('screenshot_url:', item.screenshot_url)
+    console.log('R2_PUBLIC_URL:', process.env.NEXT_PUBLIC_R2_PUBLIC_URL)
+    console.log('is R2 file:', item.screenshot_url?.includes(process.env.NEXT_PUBLIC_R2_PUBLIC_URL || ''))
+
     // 3. R2 이미지 삭제 (R2 URL인 경우에만)
     const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
     if (r2PublicUrl && item.screenshot_url && item.screenshot_url.includes(r2PublicUrl)) {
@@ -45,13 +49,14 @@ export async function DELETE(
         const fileKey = item.screenshot_url.replace(`${r2PublicUrl}/`, '')
         
         if (fileKey) {
-          await r2Client.send(
+          console.log('Deleting from R2:', fileKey)
+          const deleteRes = await r2Client.send(
             new DeleteObjectCommand({
               Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
               Key: fileKey,
             })
           )
-          console.log(`Deleted R2 object: ${fileKey}`)
+          console.log('R2 delete result:', deleteRes)
         }
       } catch (r2Error) {
         console.error('R2 delete error:', r2Error)
