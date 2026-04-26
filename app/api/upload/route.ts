@@ -28,7 +28,8 @@ export async function POST(request: Request) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer())
-    const fileName = `${user.id}/${Date.now()}-${file.name}`
+    const sanitizedFileName = file.name.replace(/\s+/g, '_')
+    const fileName = `${user.id}/${Date.now()}-${sanitizedFileName}`
     const contentType = file.type
 
     await r2Client.send(
