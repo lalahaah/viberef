@@ -179,21 +179,26 @@ export default function DashboardClient({ initialItems, initialCollections, user
   // 아이템 삭제 로직
   const handleDeleteItem = async (e: React.MouseEvent, itemId: string) => {
     e.stopPropagation()
+    console.log('handleDeleteItem called for:', itemId)
     if (!confirm('정말 삭제할까요?')) return
 
     try {
+      console.log('Initiating DELETE request to:', `/api/items/${itemId}`)
       const response = await fetch(`/api/items/${itemId}`, {
         method: 'DELETE',
       })
 
+      console.log('DELETE response status:', response.status)
       if (response.ok) {
         setItems(prev => prev.filter(i => i.id !== itemId))
         if (selectedItem?.id === itemId) setSelectedItem(null)
       } else {
         const data = await response.json()
+        console.error('DELETE error data:', data)
         throw new Error(data.error || '삭제 실패')
       }
     } catch (error: any) {
+      console.error('handleDeleteItem error:', error)
       alert(error.message || '삭제 중 오류가 발생했습니다.')
     }
   }
