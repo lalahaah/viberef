@@ -39,18 +39,18 @@ export async function DELETE(
     console.log('screenshot_url:', item.screenshot_url)
     console.log('R2_PUBLIC_URL:', process.env.NEXT_PUBLIC_R2_PUBLIC_URL)
     console.log('is R2 file:', item.screenshot_url?.includes(process.env.NEXT_PUBLIC_R2_PUBLIC_URL || ''))
-// 3. R2 이미지 삭제 (R2 URL인 경우에만)
-const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
-if (r2PublicUrl && item.screenshot_url && item.screenshot_url.includes(r2PublicUrl)) {
-  try {
-    // URL 객체를 사용하여 호스트 이후의 경로만 안전하게 추출
-    const url = new URL(item.screenshot_url)
-    const fileKey = url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname
 
-    if (fileKey) {
-      console.log('Deleting from R2:', fileKey)
-      const deleteRes = await r2Client.send(
-...
+    // 3. R2 이미지 삭제 (R2 URL인 경우에만)
+    const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL
+    if (r2PublicUrl && item.screenshot_url && item.screenshot_url.includes(r2PublicUrl)) {
+      try {
+        // URL 객체를 사용하여 호스트 이후의 경로만 안전하게 추출
+        const url = new URL(item.screenshot_url)
+        const fileKey = url.pathname.startsWith('/') ? url.pathname.slice(1) : url.pathname
+
+        if (fileKey) {
+          console.log('Deleting from R2:', fileKey)
+          const deleteRes = await r2Client.send(
             new DeleteObjectCommand({
               Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
               Key: fileKey,
@@ -60,7 +60,7 @@ if (r2PublicUrl && item.screenshot_url && item.screenshot_url.includes(r2PublicU
         }
       } catch (r2Error) {
         console.error('R2 delete error:', r2Error)
-        // R2 삭제 실패해도 DB 삭제는 진행 (또는 정책에 따라 결정)
+        // R2 삭제 실패해도 DB 삭제는 진행
       }
     }
 
