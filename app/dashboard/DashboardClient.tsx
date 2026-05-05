@@ -317,6 +317,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
 
   const handleImageClick = (e: React.MouseEvent, item: any) => {
     e.stopPropagation()
+    setSelectedItem(item)
     if (item.screenshot_url) {
       setIsZoomModalOpen(true)
     } else {
