@@ -56,7 +56,7 @@ export default function PrivacyPolicy() {
             <p className="text-[#C8C8C8] leading-relaxed">
               If you have any questions regarding this privacy policy, you may contact us at:
               <br />
-              <a href="mailto:postaiji9@gmail.com" className="text-[#F5E642] hover:underline mt-2 inline-block">postaiji9@gmail.com</a>
+              <a href="mailto:hello@nextidealab.app" className="text-[#F5E642] hover:underline mt-2 inline-block">hello@nextidealab.app</a>
             </p>
           </div>
         </section>
