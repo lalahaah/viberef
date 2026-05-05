@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "VibeRef Clipper",
   "version": "1.0",
-  "description": "한 클릭으로 디자인 레퍼런스를 VibeRef에 저장하세요.",
+  "description": "Save design references to VibeRef with one click. The ultimate tool for vibe coders.",
   "permissions": [
     "activeTab",
     "storage",
