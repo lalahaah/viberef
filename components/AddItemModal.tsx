@@ -3,18 +3,21 @@
 import { useState, useRef } from 'react'
 import { X, Loader2, Upload, Globe, Image as ImageIcon, Check } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
+import { translations, Language } from '@/utils/translations'
 
 interface AddItemModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: (newItem: any) => void
   collections: any[]
+  language: Language
 }
 
 type TabMode = 'url' | 'upload'
 type UrlType = 'website' | 'image'
 
-export default function AddItemModal({ isOpen, onClose, onSuccess, collections }: AddItemModalProps) {
+export default function AddItemModal({ isOpen, onClose, onSuccess, collections, language }: AddItemModalProps) {
+  const t = translations[language]
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<TabMode>('url')
   const [urlType, setUrlType] = useState<UrlType>('website')
@@ -140,7 +143,7 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div className="w-full max-w-md bg-[#222228] border border-[#2A2A32] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
         <div className="flex items-center justify-between p-5 border-b border-[#2A2A32]">
-          <h2 className="text-lg font-bold text-white tracking-tight">아이템 추가</h2>
+          <h2 className="text-lg font-bold text-white tracking-tight">{t.addItem}</h2>
           <button onClick={handleClose} className="text-[#666666] hover:text-white transition-colors">
             <X size={20} />
           </button>
@@ -154,7 +157,7 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
               activeTab === 'url' ? 'bg-[#2A2A32] text-[#F5E642]' : 'text-[#666666] hover:text-[#999]'
             }`}
           >
-            <Globe size={14} /> URL로 저장
+            <Globe size={14} /> {t.urlMode}
           </button>
           <button
             onClick={() => setActiveTab('upload')}
@@ -162,7 +165,7 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
               activeTab === 'upload' ? 'bg-[#2A2A32] text-[#F5E642]' : 'text-[#666666] hover:text-[#999]'
             }`}
           >
-            <Upload size={14} /> 이미지 업로드
+            <Upload size={14} /> {t.uploadMode}
           </button>
         </div>
 
@@ -177,7 +180,7 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
                     urlType === 'website' ? 'bg-[#2A2A32] text-[#E5E5E5]' : 'text-[#666666]'
                   }`}
                 >
-                  웹사이트 URL
+                  {t.websiteUrl}
                 </button>
                 <button
                   type="button"
@@ -186,7 +189,7 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
                     urlType === 'image' ? 'bg-[#2A2A32] text-[#E5E5E5]' : 'text-[#666666]'
                   }`}
                 >
-                  이미지 URL
+                  {t.imageUrl}
                 </button>
               </div>
               <div className="space-y-1.5">
@@ -205,7 +208,7 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
             </div>
           ) : (
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">Image File *</label>
+              <label className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">{t.uploadFile}</label>
               <div 
                 onClick={() => fileInputRef.current?.click()}
                 className={`w-full aspect-video bg-[#1A1A1F] border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer transition-all hover:border-[#F5E642]/50 group relative overflow-hidden ${
@@ -216,7 +219,7 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
                   <>
                     <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-white text-xs font-bold">변경하려면 클릭</p>
+                      <p className="text-white text-xs font-bold">{t.uploadChange}</p>
                     </div>
                   </>
                 ) : (
@@ -224,8 +227,8 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
                     <div className="w-10 h-10 rounded-full bg-[#2A2A32] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                       <Upload size={20} className="text-[#666666] group-hover:text-[#F5E642]" />
                     </div>
-                    <p className="text-xs font-bold text-[#666666] group-hover:text-[#999]">파일을 선택하거나 드래그하세요</p>
-                    <p className="text-[10px] text-[#444] mt-1">JPG, PNG, GIF, WEBP</p>
+                    <p className="text-xs font-bold text-[#666666] group-hover:text-[#999]">{t.uploadPlaceholder}</p>
+                    <p className="text-[10px] text-[#444] mt-1">{t.uploadHint}</p>
                   </>
                 )}
                 <input
@@ -240,10 +243,10 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
           )}
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">Title</label>
+            <label className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">{t.title}</label>
             <input
               type="text"
-              placeholder="제목 (비워두면 자동 설정)"
+              placeholder={t.placeholderTitle}
               className="w-full bg-[#1A1A1F] border border-[#2A2A32] rounded-md py-2 px-3 text-sm text-[#E5E5E5] placeholder-[#444] focus:outline-none focus:border-[#F5E642] transition-all"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -252,23 +255,23 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">Collection</label>
+              <label className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">{t.collections}</label>
               <select
                 className="w-full bg-[#1A1A1F] border border-[#2A2A32] rounded-md py-2 px-3 text-sm text-[#E5E5E5] focus:outline-none focus:border-[#F5E642] appearance-none"
                 value={formData.collection_id}
                 onChange={(e) => setFormData({ ...formData, collection_id: e.target.value })}
               >
-                <option value="">컬렉션 선택 안함</option>
+                <option value="">{t.selectCollection}</option>
                 {collections.map(col => (
                   <option key={col.id} value={col.id}>{col.name}</option>
                 ))}
               </select>
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">Tags</label>
+              <label className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">{t.tags}</label>
               <input
                 type="text"
-                placeholder="미니멀, SaaS"
+                placeholder={t.placeholderTags}
                 className="w-full bg-[#1A1A1F] border border-[#2A2A32] rounded-md py-2 px-3 text-sm text-[#E5E5E5] placeholder-[#444] focus:outline-none focus:border-[#F5E642] transition-all"
                 value={formData.tags}
                 onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
@@ -277,10 +280,10 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">Memo</label>
+            <label className="text-[10px] font-bold text-[#666666] uppercase tracking-wider">{t.memo}</label>
             <textarea
               rows={2}
-              placeholder="메모를 입력하세요..."
+              placeholder={t.placeholderMemo}
               className="w-full bg-[#1A1A1F] border border-[#2A2A32] rounded-md py-2 px-3 text-sm text-[#E5E5E5] placeholder-[#444] focus:outline-none focus:border-[#F5E642] transition-all resize-none"
               value={formData.memo}
               onChange={(e) => setFormData({ ...formData, memo: e.target.value })}
@@ -293,14 +296,14 @@ export default function AddItemModal({ isOpen, onClose, onSuccess, collections }
               onClick={handleClose}
               className="flex-1 bg-transparent border border-[#2A2A32] text-[#666666] py-2.5 rounded-lg text-sm font-bold hover:bg-[#2A2A32] hover:text-[#E5E5E5] transition-all"
             >
-              취소
+              {t.cancel}
             </button>
             <button
               disabled={loading || (activeTab === 'upload' && !selectedFile) || (activeTab === 'url' && !formData.url)}
               type="submit"
               className="flex-[2] bg-[#F5E642] text-[#1A1A1F] py-2.5 rounded-lg text-sm font-bold hover:bg-[#e0d23a] transition-all shadow-lg shadow-[#F5E642]/5 flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {loading ? <Loader2 size={18} className="animate-spin" /> : '저장하기'}
+              {loading ? <Loader2 size={18} className="animate-spin" /> : t.save}
             </button>
           </div>
         </form>

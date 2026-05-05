@@ -2,15 +2,18 @@
 
 import { useEffect } from 'react'
 import { X, ExternalLink, Hash, Folder } from 'lucide-react'
+import { translations, Language } from '@/utils/translations'
 
 interface ImageZoomModalProps {
   isOpen: boolean
   onClose: () => void
   item: any
   collections: any[]
+  language: Language
 }
 
-export default function ImageZoomModal({ isOpen, onClose, item, collections }: ImageZoomModalProps) {
+export default function ImageZoomModal({ isOpen, onClose, item, collections, language }: ImageZoomModalProps) {
+  const t = translations[language]
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
@@ -65,39 +68,39 @@ export default function ImageZoomModal({ isOpen, onClose, item, collections }: I
         <div className="p-6 border-t border-[#2A2A32] bg-[#141418] grid grid-cols-1 md:grid-cols-2 gap-8 shrink-0">
           <div className="space-y-4">
             <div>
-              <label className="text-[10px] font-bold text-[#444] uppercase tracking-widest block mb-2">Memo</label>
-              <p className="text-[12px] text-[#E5E5E5] leading-relaxed whitespace-pre-wrap">
-                {item.memo || <span className="text-[#333] italic">작성된 메모가 없습니다.</span>}
+              <label className="text-[11px] font-bold text-[#888] uppercase tracking-widest block mb-2">{t.memo}</label>
+              <p className="text-[13px] text-[#FFFFFF] leading-relaxed whitespace-pre-wrap">
+                {item.memo || <span className="text-[#333] italic">{t.noMemo}</span>}
               </p>
             </div>
           </div>
 
           <div className="space-y-6">
             <div>
-              <label className="text-[10px] font-bold text-[#444] uppercase tracking-widest block mb-2.5">Collections</label>
+              <label className="text-[11px] font-bold text-[#888] uppercase tracking-widest block mb-2.5">{t.collections}</label>
               <div className="flex flex-wrap gap-2">
                 {item.collections?.map((col: any) => (
-                  <div key={col.id} className="flex items-center gap-1.5 px-2.5 py-1 bg-[#1A1A1F] border border-[#2A2A32] rounded text-[11px] text-[#E5E5E5]">
+                  <div key={col.id} className="flex items-center gap-1.5 px-2.5 py-1 bg-[#1A1A1F] border border-[#2A2A32] rounded text-[11px] text-[#FFFFFF]">
                     <div className="w-1 h-1 rounded-full" style={{ backgroundColor: collections.find(c => c.id === col.id)?.color || '#FFB800' }} />
                     <span>{col.name?.name || col.name}</span>
                   </div>
                 ))}
                 {(!item.collections || item.collections.length === 0) && (
-                  <span className="text-[10px] text-[#333] italic">지정된 컬렉션 없음</span>
+                  <span className="text-[11px] text-[#333] italic">{t.noCollections}</span>
                 )}
               </div>
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-[#444] uppercase tracking-widest block mb-2.5">Tags</label>
+              <label className="text-[11px] font-bold text-[#888] uppercase tracking-widest block mb-2.5">{t.tags}</label>
               <div className="flex flex-wrap gap-1.5">
                 {item.user_tags?.map((tag: string) => (
-                  <span key={tag} className="px-2.5 py-1 bg-[#2A2A32] border border-[#2A2A32] rounded text-[10px] text-[#F5E642] font-medium">
+                  <span key={tag} className="px-2.5 py-1 bg-[#2A2A32] border border-[#2A2A32] rounded text-[11px] text-[#F5E642] font-medium">
                     #{tag}
                   </span>
                 ))}
                 {(!item.user_tags || item.user_tags.length === 0) && (
-                  <span className="text-[10px] text-[#333] italic">태그 없음</span>
+                  <span className="text-[11px] text-[#333] italic">{t.noTags}</span>
                 )}
               </div>
             </div>

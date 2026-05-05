@@ -20,6 +20,7 @@ import AddItemModal from '@/components/AddItemModal'
 import ImageZoomModal from '@/components/ImageZoomModal'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
+import { translations, Language } from '@/utils/translations'
 
 interface DashboardClientProps {
   initialItems: any[]
@@ -36,6 +37,22 @@ export default function DashboardClient({ initialItems, initialCollections, user
   const [isZoomModalOpen, setIsZoomModalOpen] = useState(false)
   const [selectedItem, setSelectedItem] = useState<any>(initialItems[0] || null)
   
+  // 언어 설정
+  const [language, setLanguage] = useState<Language>('ko')
+  
+  useEffect(() => {
+    const savedLang = localStorage.getItem('language') as Language
+    if (savedLang) setLanguage(savedLang)
+  }, [])
+
+  const toggleLanguage = () => {
+    const newLang = language === 'ko' ? 'en' : 'ko'
+    setLanguage(newLang)
+    localStorage.setItem('language', newLang)
+  }
+
+  const t = translations[language]
+
   // 패널 너비 상태 (기본값 및 로컬스토리지 로드)
   const [sidebarWidth, setSidebarWidth] = useState(200)
   const [detailWidth, setDetailWidth] = useState(240)
@@ -180,7 +197,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
   const handleDeleteItem = async (e: React.MouseEvent, itemId: string) => {
     e.stopPropagation()
     console.log('handleDeleteItem called for:', itemId)
-    if (!confirm('정말 삭제할까요?')) return
+    if (!confirm(t.deleteItemConfirm)) return
 
     try {
       console.log('Initiating DELETE request to:', `/api/items/${itemId}`)
@@ -250,7 +267,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
       
       // 중복 체크
       if (collections.some(col => col.name.toLowerCase() === name.toLowerCase())) {
-        alert('이미 존재하는 컬렉션 이름입니다.')
+        alert(t.duplicateCollection)
         return
       }
 
@@ -288,7 +305,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
   // 컬렉션 삭제 핸들러
   const handleDeleteCollection = async (e: React.MouseEvent, colId: string, colName: string) => {
     e.stopPropagation()
-    if (!confirm(`'${colName}' 컬렉션을 삭제할까요?\n컬렉션 안의 아이템은 삭제되지 않습니다.`)) return
+    if (!confirm(t.deleteCollectionConfirm.replace('{name}', colName))) return
 
     const { error } = await supabase
       .from('collections')
@@ -382,14 +399,14 @@ export default function DashboardClient({ initialItems, initialCollections, user
 
         <div className="px-3 mb-6">
           <div className="relative group">
-            <Search className={`absolute left-2.5 top-2.5 h-3.5 w-3.5 transition-colors ${searchQuery ? 'text-[#F5E642]' : 'text-[#666666] group-focus-within:text-[#F5E642]'}`} />
+            <Search className={`absolute left-2.5 top-2.5 h-3.5 w-3.5 transition-colors ${searchQuery ? 'text-[#F5E642]' : 'text-[#A0A0A0] group-focus-within:text-[#F5E642]'}`} />
             <input 
               ref={searchInputRef}
               type="text" 
-              placeholder={`검색 ${modifierKey}K`}
+              placeholder={`${t.search} ${modifierKey}K`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[#1A1A1F] border border-[#2A2A32] rounded-md py-1.5 pl-8 pr-2 text-[11px] text-[#E5E5E5] placeholder-[#444] focus:outline-none focus:border-[#F5E642] transition-all"
+              className="w-full bg-[#1A1A1F] border border-[#2A2A32] rounded-md py-1.5 pl-8 pr-2 text-[11px] text-[#C8C8C8] placeholder-[#444] focus:outline-none focus:border-[#F5E642] transition-all"
             />
             {searchQuery && (
               <button 
@@ -405,10 +422,10 @@ export default function DashboardClient({ initialItems, initialCollections, user
         <nav className="flex-1 overflow-y-auto px-2 space-y-6">
           <div>
             <div className="flex items-center justify-between px-2 mb-2">
-              <h2 className="text-[10px] font-bold text-[#444] uppercase tracking-[0.2em]">Collections</h2>
+              <h2 className="text-[11px] font-bold text-[#888] uppercase tracking-[0.2em]">{t.collections}</h2>
               <button 
                 onClick={() => setIsAddingCollection(true)}
-                className="text-[#444] cursor-pointer hover:text-[#F5E642] transition-colors"
+                className="text-[#888] cursor-pointer hover:text-[#F5E642] transition-colors"
               >
                 <Plus size={14} />
               </button>
@@ -422,12 +439,12 @@ export default function DashboardClient({ initialItems, initialCollections, user
                 className={`flex items-center justify-between w-full px-2.5 py-2 text-[13px] rounded-md transition-all ${
                   (selectedCollectionId === null && selectedTag === null)
                   ? 'bg-[#F5E642] text-[#1A1A1F] font-semibold' 
-                  : 'text-[#666666] hover:bg-[#222228] hover:text-[#E5E5E5]'
+                  : 'text-[#C0C0C0] hover:bg-[#222228] hover:text-[#E5E5E5]'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
                   <div className={`w-1.5 h-1.5 rounded-full ${(selectedCollectionId === null && selectedTag === null) ? 'bg-[#1A1A1F]' : 'bg-[#444]'}`} />
-                  <span className="font-normal">전체</span>
+                  <span className="font-normal">{t.all}</span>
                 </div>
                 <span className={`text-[10px] ${(selectedCollectionId === null && selectedTag === null) ? 'text-[#1A1A1F]/60' : 'text-[#444]'}`}>{items.length}</span>
               </button>
@@ -444,7 +461,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
                     className={`flex items-center justify-between w-full px-2.5 py-2 text-[13px] rounded-md transition-all group ${
                       selectedCollectionId === col.id 
                       ? 'bg-[#F5E642] text-[#1A1A1F] font-semibold' 
-                      : 'text-[#666666] hover:bg-[#222228] hover:text-[#E5E5E5]'
+                      : 'text-[#C0C0C0] hover:bg-[#222228] hover:text-[#E5E5E5]'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 overflow-hidden">
@@ -477,7 +494,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
                     onBlur={() => {
                       if (!newCollectionName) setIsAddingCollection(false)
                     }}
-                    placeholder="이름 입력..."
+                    placeholder={t.enterName}
                     className="w-full bg-[#1A1A1F] border border-[#F5E642] rounded px-2 py-1 text-[12px] text-[#E5E5E5] focus:outline-none"
                   />
                 </div>
@@ -487,7 +504,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
 
           <div>
             <div className="flex items-center justify-between px-2 mb-2">
-              <h2 className="text-[10px] font-bold text-[#444] uppercase tracking-[0.2em]">Tags</h2>
+              <h2 className="text-[11px] font-bold text-[#888] uppercase tracking-[0.2em]">{t.tags}</h2>
             </div>
             <div className="space-y-0.5">
               {allTags.map(tag => (
@@ -497,7 +514,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
                   className={`flex items-center justify-between w-full px-2.5 py-1.5 text-[12px] rounded-md transition-all ${
                     selectedTag === tag 
                     ? 'text-[#F5E642] font-semibold bg-[#F5E642]/5' 
-                    : 'text-[#666666] hover:text-[#E5E5E5]'
+                    : 'text-[#A0A0A0] hover:text-[#E5E5E5]'
                   }`}
                 >
                   <span className="truncate max-w-[130px]">#{tag}</span>
@@ -505,20 +522,28 @@ export default function DashboardClient({ initialItems, initialCollections, user
                 </button>
               ))}
               {allTags.length === 0 && (
-                <div className="px-2.5 py-2 text-[11px] text-[#444] italic">태그가 없습니다</div>
+                <div className="px-2.5 py-2 text-[11px] text-[#888] italic">{t.noTags}</div>
               )}
             </div>
           </div>
         </nav>
 
         <div className="p-4 border-t border-[#2A2A32] space-y-1">
-          <div className="px-2.5 py-2 text-[11px] text-[#444] truncate">{userEmail}</div>
-          <button className="flex items-center gap-2.5 w-full px-2.5 py-2 text-[13px] text-[#666666] hover:bg-[#222228] hover:text-[#E5E5E5] rounded-md transition-all font-normal">
-            <Settings size={16} strokeWidth={1.5} /> 설정
-          </button>
+          <div className="px-2.5 py-2 text-[11px] text-[#888] truncate">{userEmail}</div>
+          <div className="flex items-center gap-1">
+            <button className="flex-1 flex items-center gap-2.5 px-2.5 py-2 text-[13px] text-[#C0C0C0] hover:bg-[#222228] hover:text-[#E5E5E5] rounded-md transition-all font-normal">
+              <Settings size={16} strokeWidth={1.5} /> {t.settings}
+            </button>
+            <button 
+              onClick={toggleLanguage}
+              className="px-2 py-1.5 text-[10px] font-bold bg-[#1A1A1F] border border-[#2A2A32] rounded text-[#888] hover:text-[#F5E642] hover:border-[#F5E642] transition-all uppercase"
+            >
+              {language}
+            </button>
+          </div>
           <form action={signOut}>
-            <button type="submit" className="flex items-center gap-2.5 w-full px-2.5 py-2 text-[13px] text-[#666666] hover:bg-[#FF4D4D]/10 hover:text-[#FF4D4D] rounded-md transition-all font-normal">
-              <LogOut size={16} strokeWidth={1.5} /> 로그아웃
+            <button type="submit" className="flex items-center gap-2.5 w-full px-2.5 py-2 text-[13px] text-[#C0C0C0] hover:bg-[#FF4D4D]/10 hover:text-[#FF4D4D] rounded-md transition-all font-normal">
+              <LogOut size={16} strokeWidth={1.5} /> {t.logout}
             </button>
           </form>
         </div>
@@ -529,21 +554,21 @@ export default function DashboardClient({ initialItems, initialCollections, user
         <header className="h-14 border-b border-[#2A2A32] flex items-center justify-between px-6 bg-[#1A1A1F]/80 backdrop-blur-md z-10">
           <div className="flex items-center gap-3">
             <h2 className="text-sm font-semibold text-white tracking-tight">
-              {searchQuery && `검색: ${searchQuery}`}
+              {searchQuery && `${t.search}: ${searchQuery}`}
               {!searchQuery && selectedCollectionId && !selectedTag && collections.find(c => c.id === selectedCollectionId)?.name}
-              {!searchQuery && !selectedCollectionId && selectedTag && `태그: #${selectedTag}`}
+              {!searchQuery && !selectedCollectionId && selectedTag && `${t.tags}: #${selectedTag}`}
               {!searchQuery && selectedCollectionId && selectedTag && `${collections.find(c => c.id === selectedCollectionId)?.name} + #${selectedTag}`}
-              {!searchQuery && !selectedCollectionId && !selectedTag && "전체 레퍼런스"}
+              {!searchQuery && !selectedCollectionId && !selectedTag && t.allReferences}
             </h2>
-            <span className="text-[#666666] text-xs">|</span>
-            <span className="text-xs text-[#666666]">{filteredItems.length} items</span>
+            <span className="text-[#A0A0A0] text-xs">|</span>
+            <span className="text-xs text-[#A0A0A0]">{filteredItems.length} items</span>
           </div>
           <div className="flex items-center gap-4">
             <button 
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 px-3 py-1.5 bg-[#F5E642] text-[#1A1A1F] rounded-md text-xs font-bold hover:bg-[#e0d23a] transition-all shadow-lg shadow-[#F5E642]/5"
             >
-              <Plus size={14} /> 아이템 추가
+              <Plus size={14} /> {t.addItem}
             </button>
           </div>
         </header>
@@ -589,10 +614,10 @@ export default function DashboardClient({ initialItems, initialCollections, user
                     </div>
                   </div>
                   <div className="px-1">
-                    <h3 className={`text-[13px] font-normal truncate transition-colors ${currentSelectedItem?.id === item.id ? 'text-[#F5E642]' : 'text-[#E5E5E5] group-hover:text-[#F5E642]'}`}>
+                    <h3 className={`text-[13px] font-normal truncate transition-colors ${currentSelectedItem?.id === item.id ? 'text-[#F5E642]' : 'text-[#FFFFFF] group-hover:text-[#F5E642]'}`}>
                       {item.title}
                     </h3>
-                    <p className="text-[10px] text-[#666666] mt-0.5 truncate">{getHostname(item.url)}</p>
+                    <p className="text-[11px] text-[#888888] mt-0.5 truncate">{getHostname(item.url)}</p>
                   </div>
                 </div>
               ))}
@@ -600,12 +625,12 @@ export default function DashboardClient({ initialItems, initialCollections, user
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-[#444] space-y-4">
               <Search size={48} strokeWidth={1} />
-              <div className="text-sm tracking-widest uppercase">검색 결과가 없습니다</div>
+              <div className="text-sm tracking-widest uppercase">{t.searchNoResult}</div>
               <button 
                 onClick={() => setSearchQuery('')}
                 className="text-[11px] text-[#F5E642] hover:underline"
               >
-                검색 초기화
+                {t.searchReset}
               </button>
             </div>
           )}
@@ -625,8 +650,8 @@ export default function DashboardClient({ initialItems, initialCollections, user
         {currentSelectedItem ? (
           <>
             <div className="h-14 border-b border-[#2A2A32] flex items-center justify-between px-5 shrink-0">
-              <h2 className="font-bold text-[10px] text-[#444] uppercase tracking-[0.2em]">Properties</h2>
-              <ChevronRight size={16} className="text-[#444] cursor-pointer hover:text-[#666666]" />
+              <h2 className="font-bold text-[11px] text-[#888] uppercase tracking-[0.2em]">{t.properties}</h2>
+              <ChevronRight size={16} className="text-[#888] cursor-pointer hover:text-[#A0A0A0]" />
             </div>
             
             <div className="flex-1 overflow-y-auto p-5 space-y-8 scrollbar-hide overflow-x-hidden">
@@ -646,20 +671,20 @@ export default function DashboardClient({ initialItems, initialCollections, user
                     </div>
                   </>
                 ) : (
-                  <span className="text-[9px] text-[#444] font-bold tracking-[0.3em] uppercase">Preview</span>
+                  <span className="text-[11px] text-[#888] font-bold tracking-[0.3em] uppercase">Preview</span>
                 )}
               </div>
 
               <div className="space-y-5 min-w-0">
                 <div className="min-w-0">
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[10px] font-bold text-[#444] uppercase tracking-wider block">Title</label>
+                    <label className="text-[11px] font-bold text-[#888] uppercase tracking-wider block">{t.title}</label>
                     {saveStatus === 'title' && <Check size={10} className="text-[#F5E642] animate-in fade-in" />}
                   </div>
                   {editingField === 'title' ? (
                     <input 
                       autoFocus
-                      className="w-full bg-[#1A1A1F] border border-[#F5E642] rounded px-2 py-1 text-[13px] text-[#E5E5E5] focus:outline-none"
+                      className="w-full bg-[#1A1A1F] border border-[#F5E642] rounded px-2 py-1 text-[13px] text-[#FFFFFF] focus:outline-none"
                       value={editValue}
                       onChange={(e) => setEditValue(e.target.value)}
                       onBlur={() => handleUpdateItem(currentSelectedItem.id, 'title', editValue)}
@@ -671,7 +696,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
                         setEditingField('title')
                         setEditValue(currentSelectedItem.title || '')
                       }}
-                      className="text-[13px] font-normal text-[#E5E5E5] leading-snug break-words cursor-pointer hover:text-[#F5E642] transition-colors"
+                      className="text-[13px] font-normal text-[#FFFFFF] leading-snug break-words cursor-pointer hover:text-[#F5E642] transition-colors"
                     >
                       {currentSelectedItem.title}
                     </div>
@@ -679,7 +704,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
                 </div>
                 
                 <div className="min-w-0">
-                  <label className="text-[10px] font-bold text-[#444] uppercase tracking-wider block mb-1.5">URL</label>
+                  <label className="text-[11px] font-bold text-[#888] uppercase tracking-wider block mb-1.5">{t.url}</label>
                   <a href={currentSelectedItem.url} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-[12px] text-[#F5E642] hover:underline cursor-pointer group min-w-0">
                     <span className="truncate flex-1">{currentSelectedItem.url}</span>
                     <ExternalLink size={10} className="shrink-0 opacity-50 group-hover:opacity-100" />
@@ -689,9 +714,9 @@ export default function DashboardClient({ initialItems, initialCollections, user
                 {/* 컬렉션 섹션 */}
                 <div className="min-w-0">
                   <div className="flex items-center justify-between mb-2 gap-2">
-                    <label className="text-[10px] font-bold text-[#444] uppercase tracking-wider">Collections</label>
+                    <label className="text-[11px] font-bold text-[#888] uppercase tracking-wider">{t.collections}</label>
                     <div className="relative group shrink-0">
-                      <button className="text-[#444] hover:text-[#F5E642] transition-colors p-1">
+                      <button className="text-[#888] hover:text-[#F5E642] transition-colors p-1">
                         <Plus size={12} />
                       </button>
                       <div className="absolute right-0 left-auto top-6 w-36 bg-[#222228] border border-[#2A2A32] rounded-md shadow-xl opacity-0 invisible group-hover:opacity-100 group-focus-within:opacity-100 group-focus-within:visible transition-all z-20">
@@ -708,39 +733,39 @@ export default function DashboardClient({ initialItems, initialCollections, user
                           ))}
                         </div>
                         {collections.length === 0 && (
-                          <div className="px-3 py-2 text-[10px] text-[#444] italic">컬렉션 없음</div>
+                          <div className="px-3 py-2 text-[10px] text-[#888] italic">{t.noCollections}</div>
                         )}
                       </div>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-1.5 overflow-hidden">
                     {currentSelectedItem.collections?.map((col: any) => (
-                      <div key={col.id} className="flex items-center gap-1.5 px-2 py-1 bg-[#1A1A1F] border border-[#2A2A32] rounded text-[11px] text-[#E5E5E5] max-w-full">
+                      <div key={col.id} className="flex items-center gap-1.5 px-2 py-1 bg-[#1A1A1F] border border-[#2A2A32] rounded text-[11px] text-[#FFFFFF] max-w-full">
                         <div className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: collections.find(c => c.id === col.id)?.color || '#FFB800' }} />
                         <span className="truncate">{col.name?.name || col.name}</span>
                         <CloseIcon 
                           size={10} 
-                          className="text-[#444] hover:text-[#FF4D4D] cursor-pointer shrink-0" 
+                          className="text-[#888] hover:text-[#FF4D4D] cursor-pointer shrink-0" 
                           onClick={() => toggleCollectionForItem(currentSelectedItem.id, col.id)}
                         />
                       </div>
                     ))}
                     {(!currentSelectedItem.collections || currentSelectedItem.collections.length === 0) && (
-                      <div className="text-[10px] text-[#444] italic">지정된 컬렉션 없음</div>
+                      <div className="text-[11px] text-[#888] italic">{t.noCollections}</div>
                     )}
                   </div>
                 </div>
 
                 <div className="min-w-0">
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[10px] font-bold text-[#444] uppercase tracking-wider block">Memo</label>
+                    <label className="text-[11px] font-bold text-[#888] uppercase tracking-wider block">{t.memo}</label>
                     {saveStatus === 'memo' && <Check size={10} className="text-[#F5E642] animate-in fade-in" />}
                   </div>
                   {editingField === 'memo' ? (
                     <textarea 
                       autoFocus
                       rows={3}
-                      className="w-full bg-[#1A1A1F] border border-[#F5E642] rounded px-2 py-1 text-[12px] text-[#E5E5E5] focus:outline-none resize-none"
+                      className="w-full bg-[#1A1A1F] border border-[#F5E642] rounded px-2 py-1 text-[13px] text-[#FFFFFF] focus:outline-none resize-none"
                       value={editValue}
                       onChange={(e) => setEditValue(e.target.value)}
                       onBlur={() => handleUpdateItem(currentSelectedItem.id, 'memo', editValue)}
@@ -751,25 +776,25 @@ export default function DashboardClient({ initialItems, initialCollections, user
                         setEditingField('memo')
                         setEditValue(currentSelectedItem.memo || '')
                       }}
-                      className="text-[12px] text-[#666666] leading-relaxed bg-[#1A1A1F] p-3 rounded-md border border-[#2A2A32] cursor-pointer hover:border-[#F5E642] transition-colors min-h-[60px]"
+                      className="text-[13px] text-[#A0A0A0] leading-relaxed bg-[#1A1A1F] p-3 rounded-md border border-[#2A2A32] cursor-pointer hover:border-[#F5E642] transition-colors min-h-[60px]"
                     >
-                      {currentSelectedItem.memo || '메모를 입력하세요...'}
+                      {currentSelectedItem.memo || t.noMemo}
                     </div>
                   )}
                 </div>
 
                 <div className="min-w-0">
                   <div className="flex items-center justify-between mb-2.5">
-                    <label className="text-[10px] font-bold text-[#444] uppercase tracking-wider">Tags</label>
+                    <label className="text-[11px] font-bold text-[#888] uppercase tracking-wider">{t.tags}</label>
                     {saveStatus === 'user_tags' && <Check size={10} className="text-[#F5E642] animate-in fade-in" />}
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {currentSelectedItem.user_tags?.map((tag: string) => (
-                      <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-[#2A2A32] border border-[#2A2A32] rounded text-[10px] text-[#F5E642] group">
+                      <span key={tag} className="flex items-center gap-1 px-2 py-0.5 bg-[#2A2A32] border border-[#2A2A32] rounded text-[12px] text-[#F5E642] group font-medium">
                         #{tag}
                         <CloseIcon 
                           size={8} 
-                          className="text-[#444] hover:text-[#ff4444] cursor-pointer" 
+                          className="text-[#888] hover:text-[#ff4444] cursor-pointer" 
                           onClick={() => handleToggleTag(currentSelectedItem.id, tag, 'remove')}
                         />
                       </span>
@@ -778,7 +803,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
                       <input 
                         autoFocus
                         placeholder="태그 입력..."
-                        className="bg-transparent border-b border-[#F5E642] text-[10px] text-[#F5E642] outline-none w-20"
+                        className="bg-transparent border-b border-[#F5E642] text-[12px] text-[#F5E642] outline-none w-20"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
                             handleToggleTag(currentSelectedItem.id, (e.target as HTMLInputElement).value, 'add')
@@ -791,9 +816,9 @@ export default function DashboardClient({ initialItems, initialCollections, user
                     ) : (
                       <button 
                         onClick={() => setEditingField('tags')}
-                        className="px-2 py-0.5 border border-dashed border-[#444] rounded text-[10px] text-[#444] hover:text-[#F5E642] hover:border-[#F5E642] transition-colors"
+                        className="px-2 py-0.5 border border-dashed border-[#888] rounded text-[12px] text-[#888] hover:text-[#F5E642] hover:border-[#F5E642] transition-colors"
                       >
-                        + 추가
+                        {t.addTag}
                       </button>
                     )}
                   </div>
@@ -802,14 +827,14 @@ export default function DashboardClient({ initialItems, initialCollections, user
             </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-[#444] text-[10px] uppercase tracking-widest px-10 text-center leading-loose">
-            아이템을 선택하여 상세 정보를 확인하세요
+          <div className="flex-1 flex items-center justify-center text-[#888] text-[11px] uppercase tracking-widest px-10 text-center leading-loose">
+            {t.selectItem}
           </div>
         )}
 
         <div className="p-5 border-t border-[#2A2A32] bg-[#141418]">
           <button disabled={!currentSelectedItem} className="w-full bg-[#F5E642] text-[#1A1A1F] py-2.5 rounded-lg text-xs font-bold hover:bg-[#e0d23a] transition-all shadow-lg shadow-[#F5E642]/5 flex items-center justify-center gap-2 group disabled:opacity-20">
-             AI Tailwind 변환
+             {t.aiTransform}
              <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
         </div>
@@ -860,6 +885,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
         onClose={() => setIsModalOpen(false)} 
         onSuccess={handleAddItemSuccess}
         collections={collections}
+        language={language}
       />
 
       <ImageZoomModal 
@@ -867,6 +893,7 @@ export default function DashboardClient({ initialItems, initialCollections, user
         onClose={() => setIsZoomModalOpen(false)}
         item={currentSelectedItem}
         collections={collections}
+        language={language}
       />
     </div>
   )
