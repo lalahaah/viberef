@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "VibeRef Clipper",
   "version": "1.0",
-  "description": "Save design references to VibeRef with one click. The ultimate tool for vibe coders.",
+  "description": "Save any design reference to VibeRef with one click. Built for vibe coders.",
   "permissions": [
     "activeTab",
     "storage",
