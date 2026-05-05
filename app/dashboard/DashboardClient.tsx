@@ -246,6 +246,14 @@ export default function DashboardClient({ initialItems, initialCollections, user
   // 컬렉션 추가 핸들러
   const handleAddCollection = async (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && newCollectionName.trim()) {
+      const name = newCollectionName.trim()
+      
+      // 중복 체크
+      if (collections.some(col => col.name.toLowerCase() === name.toLowerCase())) {
+        alert('이미 존재하는 컬렉션 이름입니다.')
+        return
+      }
+
       const randomColors = ['#FFB800', '#FF4D4D', '#4D7DFF', '#4DFF88', '#BD4DFF', '#FF4DBC']
       const randomColor = randomColors[Math.floor(Math.random() * randomColors.length)]
       
@@ -274,6 +282,33 @@ export default function DashboardClient({ initialItems, initialCollections, user
     } else if (e.key === 'Escape') {
       setIsAddingCollection(false)
       setNewCollectionName('')
+    }
+  }
+
+  // 컬렉션 삭제 핸들러
+  const handleDeleteCollection = async (e: React.MouseEvent, colId: string, colName: string) => {
+    e.stopPropagation()
+    if (!confirm(`'${colName}' 컬렉션을 삭제할까요?\n컬렉션 안의 아이템은 삭제되지 않습니다.`)) return
+
+    const { error } = await supabase
+      .from('collections')
+      .delete()
+      .match({ id: colId })
+
+    if (!error) {
+      setCollections(prev => prev.filter(c => c.id !== colId))
+      // 아이템들의 컬렉션 정보에서도 제거
+      setItems(prev => prev.map(item => ({
+        ...item,
+        collections: item.collections?.filter((c: any) => (c.id || c.collection_id) !== colId) || []
+      })))
+      
+      if (selectedCollectionId === colId) {
+        setSelectedCollectionId(null)
+      }
+    } else {
+      console.error('Error deleting collection:', error)
+      alert('컬렉션 삭제 중 오류가 발생했습니다.')
     }
   }
 
@@ -412,13 +447,21 @@ export default function DashboardClient({ initialItems, initialCollections, user
                       : 'text-[#666666] hover:bg-[#222228] hover:text-[#E5E5E5]'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: col.color || '#FFB800' }} />
-                      <span className="font-normal truncate max-w-[110px]">{col.name}</span>
+                    <div className="flex items-center gap-2.5 overflow-hidden">
+                      <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: col.color || '#FFB800' }} />
+                      <span className="font-normal truncate">{col.name}</span>
                     </div>
-                    <span className={`text-[10px] ${selectedCollectionId === col.id ? 'text-[#1A1A1F]/60' : 'text-[#444]'}`}>
-                      {itemCount}
-                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className={`text-[10px] ${selectedCollectionId === col.id ? 'text-[#1A1A1F]/60' : 'text-[#444]'} group-hover:hidden`}>
+                        {itemCount}
+                      </span>
+                      <div 
+                        onClick={(e) => handleDeleteCollection(e, col.id, col.name)}
+                        className={`hidden group-hover:flex items-center justify-center p-0.5 rounded hover:bg-black/10 ${selectedCollectionId === col.id ? 'text-[#1A1A1F]/60 hover:text-[#1A1A1F]' : 'text-[#444] hover:text-[#ff4444]'}`}
+                      >
+                        <CloseIcon size={12} />
+                      </div>
+                    </div>
                   </button>
                 )
               })}
