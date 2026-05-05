@@ -13,9 +13,14 @@
     }
     .header {
       display: flex;
-      items-center: center;
-      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
       margin-bottom: 20px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .logo {
       width: 24px;
@@ -35,6 +40,22 @@
       color: white;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+    }
+    .lang-toggle {
+      background-color: #222228;
+      border: 1px solid #2A2A32;
+      color: #888;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    .lang-toggle:hover {
+      border-color: #F5E642;
+      color: #F5E642;
     }
     .form-group {
       margin-bottom: 12px;
@@ -92,76 +113,54 @@
       color: #F5E642;
       display: none;
     }
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
+    .error {
+      color: #ff4444;
+      font-size: 11px;
+      margin-top: 8px;
+      display: none;
     }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .lang-toggle {
-      background-color: #222228;
-      border: 1px solid #2A2A32;
-      color: #888;
-      font-size: 10px;
-      font-weight: bold;
-      padding: 4px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      text-transform: uppercase;
-      transition: all 0.2s;
-    }
-    .lang-toggle:hover {
-      border-color: #F5E642;
-      color: #F5E642;
-    }
-    .logo {
-    ...
-    <body>
-    <div class="header">
+  </style>
+</head>
+<body>
+  <div class="header">
     <div class="header-left">
       <div class="logo">V</div>
       <div class="title">VibeRef Clipper</div>
     </div>
     <button id="langToggle" class="lang-toggle">KO</button>
-    </div>
+  </div>
 
-    <div class="form-group">
-    <label id="labelTitle">Page Title</label>
+  <div class="form-group">
+    <label id="labelTitle">페이지 제목</label>
     <input type="text" id="pageTitle">
-    </div>
+  </div>
 
-    <div class="form-group">
+  <div class="form-group">
     <label id="labelUrl">URL</label>
     <input type="text" id="pageUrl" disabled>
-    </div>
+  </div>
 
-    <div class="form-group">
-    <label id="labelCollection">Collection</label>
+  <div class="form-group">
+    <label id="labelCollection">컬렉션</label>
     <select id="collection">
       <option value="" id="optionNoCollection">컬렉션 선택 안함</option>
     </select>
-    </div>
+  </div>
 
-    <div class="form-group">
-    <label id="labelTags">Tags</label>
+  <div class="form-group">
+    <label id="labelTags">태그</label>
     <input type="text" id="tags" placeholder="미니멀, SaaS, 웹디자인">
-    </div>
+  </div>
 
-    <div class="form-group">
-    <label id="labelMemo">Memo</label>
+  <div class="form-group">
+    <label id="labelMemo">메모</label>
     <textarea id="memo" rows="3" placeholder="메모를 입력하세요..."></textarea>
-    </div>
+  </div>
 
-    <button id="saveBtn" class="btn">저장하기</button>
-    <div id="status" class="status">저장 완료 ✓</div>
-    <div id="error" class="error"></div>
+  <button id="saveBtn" class="btn">저장하기</button>
+  <div id="status" class="status">저장 완료 ✓</div>
+  <div id="error" class="error"></div>
 
-    <script src="popup.js"></script>
-    </body>
-
+  <script src="popup.js"></script>
+</body>
 </html>

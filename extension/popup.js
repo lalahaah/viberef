@@ -44,9 +44,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   const errorDiv = document.getElementById('error');
   const langToggle = document.getElementById('langToggle');
 
-  // 언어 설정
   let currentLang = 'ko';
-  
+  let initialScreenshotUrl = '';
+
   const updateLanguage = (lang) => {
     currentLang = lang;
     langToggle.textContent = lang.toUpperCase();
@@ -58,14 +58,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('labelTags').textContent = t.labelTags;
     document.getElementById('labelMemo').textContent = t.labelMemo;
     document.getElementById('optionNoCollection').textContent = t.optionNoCollection;
+    
     tagsInput.placeholder = t.placeholderTags;
     memoInput.placeholder = t.placeholderMemo;
-    saveBtn.textContent = t.saveBtn;
+    
+    if (saveBtn.style.display !== 'none') {
+      saveBtn.textContent = t.saveBtn;
+    }
     statusDiv.textContent = t.statusSuccess;
   };
 
+  // 0. 언어 설정 불러오기
   const { language } = await chrome.storage.local.get('language');
   if (language) updateLanguage(language);
+  else updateLanguage('ko');
 
   langToggle.addEventListener('click', () => {
     const newLang = currentLang === 'ko' ? 'en' : 'ko';
@@ -74,35 +80,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // 1. 초기 데이터 설정 (현재 탭 또는 우클릭 데이터)
-  let initialScreenshotUrl = '';
-  
-  // 데이터 채우기 공통 함수
   const populateForm = (data) => {
     if (!data) return;
     pageTitleInput.value = data.title || '';
     pageUrlInput.value = data.url || '';
     initialScreenshotUrl = data.imageUrl || '';
-    
-    // 배지만 지우기 (데이터 삭제는 저장 성공 시 수행)
     chrome.action.setBadgeText({ text: "" });
   };
 
-  // 메시지 리스너 추가 (팝업이 열려있는 상태에서 우클릭 시)
   chrome.runtime.onMessage.addListener((message) => {
     if (message.type === 'ITEM_CAPTURED') {
       populateForm(message.data);
     }
   });
 
-  // 처음에 Storage 체크
   const { pendingItem } = await chrome.storage.local.get('pendingItem');
   if (pendingItem) {
     populateForm(pendingItem);
   } else {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab) {
-      pageTitleInput.value = tab.title || '';
-      pageUrlInput.value = tab.url || '';
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tabs && tabs[0]) {
+      pageTitleInput.value = tabs[0].title || '';
+      pageUrlInput.value = tabs[0].url || '';
     }
   }
 
@@ -156,9 +155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const result = await response.json();
 
       if (result.success) {
-        // 저장 성공 시에만 임시 데이터 삭제
         chrome.storage.local.remove('pendingItem');
-        
         statusDiv.style.display = 'block';
         saveBtn.style.display = 'none';
         setTimeout(() => window.close(), 1500);
